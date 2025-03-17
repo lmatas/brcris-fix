@@ -57,36 +57,6 @@ def verify_before_process(conn):
         "Total de referencias con ORCID incorrecto"
     )
     
-    # 2. Ejemplos de referencias a corregir
-    print_query_results(conn,
-        """
-        SELECT 
-            sesi.entity_id,
-            w.id AS id_semantico_antiguo,
-            w.new_id AS id_semantico_nuevo
-        FROM source_entity_semantic_identifier sesi
-        JOIN wrong_orcid_semantic_identifier w ON sesi.semantic_id = w.id
-        WHERE w.new_id IS NOT NULL
-        LIMIT 10
-        """,
-        "Ejemplos de referencias que serán modificadas (10 primeras)"
-    )
-    
-    # 3. Distribución por tipo de entidad
-    print_query_results(conn,
-        """
-        SELECT 
-            se.entity_type_id AS tipo_entidad,
-            COUNT(*) AS cantidad_referencias
-        FROM source_entity_semantic_identifier sesi
-        JOIN wrong_orcid_semantic_identifier w ON sesi.semantic_id = w.id
-        JOIN source_entity se ON sesi.entity_id = se.uuid
-        WHERE w.new_id IS NOT NULL
-        GROUP BY se.entity_type_id
-        ORDER BY COUNT(*) DESC
-        """,
-        "Distribución por tipo de entidad"
-    )
 
 def execute_correction_procedure(conn):
     """Ejecuta el procedimiento de corrección de entidades"""
@@ -165,25 +135,7 @@ def verify_after_process(conn):
         """,
         "Resumen de corrección de entidades"
     )
-    
-    # 4. Ejemplos de entidades corregidas
-    print_query_results(conn,
-        """
-        SELECT 
-            wc.old_entity_id,
-            wc.new_entity_id,
-            wc.old_semantic_id,
-            wc.new_semantic_id,
-            wc.entity_created,
-            CASE 
-                WHEN wc.entity_created THEN 'Creada'
-                ELSE 'Existente'
-            END AS estado
-        FROM wrong_orcid_entity_correction wc
-        LIMIT 10
-        """,
-        "Ejemplos de entidades corregidas (10 primeras)"
-    )
+
 
 def update_source_entity_references(conn):
     """Actualiza las referencias en source_entity_semantic_identifier"""

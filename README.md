@@ -43,14 +43,6 @@ DB_PORT=5432
 
 ## Proceso de corrección paso a paso
 
-El proceso completo se puede ejecutar con un solo comando mediante el script principal:
-
-```bash
-python execute_entity_correction.py
-```
-
-Alternativamente, puede ejecutar el proceso paso a paso:
-
 ### Paso 1: Creación y llenado de la tabla de identificadores incorrectos
 
 ```bash
@@ -65,7 +57,7 @@ Este paso crea una tabla `wrong_orcid_semantic_identifier` que:
 ### Paso 2: Generación de nuevos hashes para identificadores normalizados
 
 ```bash
-python step2_update_hash.py
+python step_2_update_orcid_with_hash.py
 ```
 
 Este paso:
