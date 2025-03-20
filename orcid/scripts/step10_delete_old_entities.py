@@ -6,8 +6,13 @@ import sys
 import os
 from utils.db_utils import get_connection
 
-def mark_entities_dirty():
-    """Marca las entidades afectadas como 'sucias' para reprocesarlas usando SQL directo"""
+def delete_wrong_entities():
+    """
+    Paso 10: Borrar entidades con semantic IDs erróneos usando SQL directo
+    """
+    print("Paso 10: Borrado de entidades con semantic IDs erróneos")
+    print("=" * 80)
+    
     conn = None
     try:
         # Conectar a la base de datos
@@ -16,12 +21,10 @@ def mark_entities_dirty():
         if not conn:
             print("Error: No se pudo establecer conexión a la base de datos.")
             return False
-            
-        cursor = conn.cursor()
         
         # Ruta al archivo SQL
         sql_file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
-                                    'sql', 'step8_mark_dirty.sql')
+                                    'sql', 'step10_delete_old_entities.sql')
         
         print(f"Leyendo SQL desde: {sql_file_path}")
         
@@ -40,7 +43,8 @@ def mark_entities_dirty():
             print(f"Ejecutando sentencia SQL {i+1}/{len(sql_statements)}...")
             
             # Ignorar comentarios en el SQL
-            if not stmt.strip().startswith('--'):
+            if stmt.strip() and not stmt.strip().startswith('--'):
+                cursor = conn.cursor()
                 cursor.execute(stmt)
                 
                 # Obtener número de filas afectadas
@@ -52,17 +56,21 @@ def mark_entities_dirty():
         
         # Mostrar resumen final
         total_time = time.time() - start_time
-        print(f"\n\nMarcado completado con éxito.")
+        print(f"\n\nPaso 10 completado con éxito.")
         print(f"Tiempo total: {total_time/60:.2f} minutos ({total_time:.2f} segundos)")
         
+        return True
+            
     except Exception as e:
         print(f"\nError: {e}")
         if conn:
             conn.rollback()
+        return False
     finally:
         if conn:
             conn.close()
-            print("Conexión a la base de datos cerrada")
+            print("Conexión cerrada.")
 
 if __name__ == "__main__":
-    mark_entities_dirty()
+    success = delete_wrong_entities()
+    sys.exit(0 if success else 1)

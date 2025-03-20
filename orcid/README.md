@@ -142,7 +142,7 @@ Este passo:
 ### Passo 10: Excluir entidades com identificadores errôneos
 
 ```bash
-python scripts/step10_merge_entities.py
+python scripts/step10_delete_old_entities.py
 ```
 
 Este passo:
@@ -179,7 +179,7 @@ brcris_fix/
 │   ├── step7_update_entity_semantic.py
 │   ├── step8_mark_entities_dirty.py
 │   ├── step9_update_final_entities.py
-│   ├── step10_merge_entities.py
+│   ├── step10_delete_old_entities.py
 │   └── step11_merge_entities.py
 ├── sql/                      # Scripts SQL utilizados pelos scripts Python
 │   ├── step1_orcid.sql
@@ -191,7 +191,7 @@ brcris_fix/
 │   ├── step7_update_semantic.sql
 │   ├── step8_mark_dirty.sql
 │   ├── step9_update_final_entities.sql
-│   ├── step10_merge_entities.sql
+│   ├── step10_delete_old_entities.sql
 │   └── step11_merge_entities.sql
 └── utils/                    # Utilitários comuns
     └── db_utils.py           # Funções para interagir com o banco de dados

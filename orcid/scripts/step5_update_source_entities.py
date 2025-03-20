@@ -1,13 +1,13 @@
-# filepath: /brcris_fix/brcris_fix/scripts/step5_update_source_entities.py
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import time
 import sys
-from utils.db_utils import get_connection, print_progress
+import os
+from utils.db_utils import get_connection
 
 def update_source_entities():
-    """Actualiza las entidades fuente cambiando los identificadores semánticos erróneos por los correctos."""
+    """Actualiza las entidades fuente usando SQL directo"""
     conn = None
     try:
         # Conectar a la base de datos
@@ -19,52 +19,49 @@ def update_source_entities():
             
         cursor = conn.cursor()
         
-        # Obtener los identificadores semánticos erróneos y sus correcciones
-        cursor.execute("""
-            SELECT sesi.entity_id, web.new_semantic_id
-            FROM public.source_entity_semantic_identifier sesi
-            JOIN public.wrong_orcid_entity_backup web ON sesi.semantic_id = web.old_semantic_id
-            WHERE web.new_semantic_id IS NOT NULL
-        """)
+        # Ruta al archivo SQL
+        sql_file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+                                    'sql', 'step5_update_source_entities.sql')
         
-        records = cursor.fetchall()
-        total_records = len(records)
-        print(f"Se encontraron {total_records} entidades para actualizar...")
+        print(f"Leyendo SQL desde: {sql_file_path}")
+        
+        # Leer el contenido del archivo SQL
+        with open(sql_file_path, 'r') as sql_file:
+            sql_content = sql_file.read()
+        
+        # Dividir el SQL por las sentencias (asumiendo que están separadas por punto y coma)
+        sql_statements = [stmt.strip() for stmt in sql_content.split(';') if stmt.strip()]
         
         # Variables para el seguimiento del progreso
         start_time = time.time()
-        processed = 0
-        commit_batch_size = 1000
         
-        # Actualizar cada entidad
-        for entity_id, new_semantic_id in records:
-            cursor.execute(
-                "UPDATE public.source_entity_semantic_identifier SET semantic_id = %s WHERE entity_id = %s",
-                (new_semantic_id, entity_id)
-            )
+        # Ejecutar cada sentencia SQL
+        for i, stmt in enumerate(sql_statements):
+            print(f"Ejecutando sentencia SQL {i+1}/{len(sql_statements)}...")
             
-            # Actualizar el progreso
-            processed += 1
-            
-            # Hacer commit cada X registros y mostrar progreso
-            if processed % commit_batch_size == 0:
-                conn.commit()
-                print_progress(processed, total_records, start_time)
+            # Ignorar comentarios en el SQL
+            if not stmt.strip().startswith('--'):
+                cursor.execute(stmt)
+                
+                # Obtener número de filas afectadas
+                rows_affected = cursor.rowcount
+                print(f"Filas afectadas: {rows_affected}")
         
-        # Confirmar cambios finales
+        # Confirmar cambios
         conn.commit()
         
         # Mostrar resumen final
         total_time = time.time() - start_time
-        print(f"\n\nActualización de entidades completada con éxito.")
+        print(f"\n\nActualización de entidades fuente completada con éxito.")
         print(f"Tiempo total: {total_time/60:.2f} minutos ({total_time:.2f} segundos)")
-        print(f"Registros procesados: {processed}")
-        print(f"Velocidad media: {processed/total_time:.2f} registros por segundo")
+        
+        return True
         
     except Exception as e:
         print(f"\nError: {e}")
         if conn:
             conn.rollback()
+        return False
     finally:
         if conn:
             conn.close()
