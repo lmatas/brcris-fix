@@ -1,3 +1,4 @@
+# filepath: /Users/lmatas/source/brcris_fix/utils/db_utils.py
 import psycopg2
 import os
 import time
@@ -5,12 +6,9 @@ import sys
 from dotenv import load_dotenv
 import xxhash
 
-# Cargar variables de entorno
 load_dotenv()
 
-# Configuración de conexión a la base de datos
 def get_db_config():
-    """Obtiene la configuración de la base de datos desde las variables de entorno"""
     return {
         'host': os.getenv('DB_HOST', 'localhost'),
         'database': os.getenv('DB_NAME', 'postgres'),
@@ -20,7 +18,6 @@ def get_db_config():
     }
 
 def get_connection():
-    """Establece y retorna una conexión a la base de datos"""
     try:
         return psycopg2.connect(**get_db_config())
     except Exception as e:
@@ -28,7 +25,6 @@ def get_connection():
         return None
 
 def execute_query(conn, query, params=None):
-    """Ejecuta una consulta y devuelve los resultados"""
     cursor = conn.cursor()
     try:
         cursor.execute(query, params)
@@ -43,7 +39,6 @@ def execute_query(conn, query, params=None):
         cursor.close()
 
 def execute_sql_file(conn, filepath):
-    """Ejecuta un archivo SQL"""
     cursor = conn.cursor()
     
     try:
@@ -62,7 +57,6 @@ def execute_sql_file(conn, filepath):
         cursor.close()
 
 def check_table_exists(conn, table_name):
-    """Verifica si una tabla existe en la base de datos"""
     cursor = conn.cursor()
     try:
         cursor.execute(f"""
@@ -80,15 +74,12 @@ def check_table_exists(conn, table_name):
         cursor.close()
 
 def generate_xxhash64_int(text):
-    """Genera un hash xxhash64 a partir del texto y lo convierte a int64"""
     hash_value = xxhash.xxh64(text).intdigest()
-    # Asegurar que el valor esté en el rango de int8 en PostgreSQL
     if hash_value > 9223372036854775807:
         hash_value -= 18446744073709551616
     return hash_value
 
 def print_progress(processed, total, start_time):
-    """Imprime el progreso de un proceso"""
     progress = (processed / total) * 100
     elapsed_time = time.time() - start_time
     records_per_second = processed / elapsed_time if elapsed_time > 0 else 0
