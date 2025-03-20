@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
 import time
 import sys
-from utils.db_utils import get_connection, print_progress
+import os
+from utils.db_utils import get_connection
 
 def merge_dirty_entities():
     """
-    Paso 11: Llamada al procedimiento para hacer merge de los campos de entidades marcadas como dirty.
-    
-    Este paso:
-    - Ejecuta el procedimiento de merge para actualizar las entidades afectadas
+    Paso 11: Merge de entidades marcadas como dirty usando SQL directo
     """
     print("Paso 11: Merge de entidades afectadas")
     print("=" * 80)
@@ -25,21 +22,46 @@ def merge_dirty_entities():
             print("Error: No se pudo establecer conexión a la base de datos.")
             return False
         
-        print("Ejecutando procedimiento de merge para entidades marcadas como dirty...")
+        # Ruta al archivo SQL
+        sql_file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+                                    'sql', 'step11_merge_entities.sql')
+        
+        print(f"Leyendo SQL desde: {sql_file_path}")
+        
+        # Leer el contenido del archivo SQL
+        with open(sql_file_path, 'r') as sql_file:
+            sql_content = sql_file.read()
+        
+        # Dividir el SQL por las sentencias (asumiendo que están separadas por punto y coma)
+        sql_statements = [stmt.strip() for stmt in sql_content.split(';') if stmt.strip()]
+        
+        # Variables para el seguimiento del progreso
         start_time = time.time()
         
-        cursor = conn.cursor()
-        print("Llamando al procedimiento: public.merge_entity_relation_data(1)")
+        # Ejecutar cada sentencia SQL
+        for i, stmt in enumerate(sql_statements):
+            # Obtener la primera línea (comentario) de la consulta
+            first_line = stmt.split('\n')[0].strip()
+            print(f"\nEjecutando sentencia SQL {i+1}/{len(sql_statements)}:")
+            print(f"Operación: {first_line}")
+            
+            # Ignorar comentarios en el SQL
+            if stmt.strip():
+                cursor = conn.cursor()
+                cursor.execute(stmt)
+                
+                # Obtener número de filas afectadas
+                rows_affected = cursor.rowcount
+                print(f"Filas afectadas: {rows_affected}")
         
-        # Ejecutar el procedimiento almacenado
-        cursor.execute("CALL public.merge_entity_relation_data(1)")
+        # Confirmar cambios
         conn.commit()
         
-        # Mostrar resumen
+        # Mostrar resumen final
         total_time = time.time() - start_time
         print(f"\n\nPaso 11 completado con éxito.")
         print(f"Tiempo total: {total_time/60:.2f} minutos ({total_time:.2f} segundos)")
-        print("Se ha completado el merge de las entidades afectadas.")
+        
         return True
             
     except Exception as e:

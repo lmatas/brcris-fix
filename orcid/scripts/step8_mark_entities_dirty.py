@@ -37,10 +37,13 @@ def mark_entities_dirty():
         
         # Ejecutar cada sentencia SQL
         for i, stmt in enumerate(sql_statements):
-            print(f"Ejecutando sentencia SQL {i+1}/{len(sql_statements)}...")
+            # Obtener la primera línea (comentario) de la consulta
+            first_line = stmt.split('\n')[0].strip()
+            print(f"\nEjecutando sentencia SQL {i+1}/{len(sql_statements)}:")
+            print(f"Operación: {first_line}")
             
             # Ignorar comentarios en el SQL
-            if not stmt.strip().startswith('--'):
+            if stmt.strip():
                 cursor.execute(stmt)
                 
                 # Obtener número de filas afectadas

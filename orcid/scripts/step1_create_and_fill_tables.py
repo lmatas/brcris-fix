@@ -47,6 +47,11 @@ def create_and_fill_tables():
                 command = command.strip()
                 if command:
                     try:
+                        # Obtener la primera línea (comentario) de la consulta
+                        first_line = command.split('\n')[0].strip()
+                        print(f"\nEjecutando comando SQL {processed+1}/{total_commands}:")
+                        print(f"Operación: {first_line}")
+                        
                         cursor.execute(command)
                         processed += 1
                         print_progress(processed, total_commands, start_time)

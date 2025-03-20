@@ -42,7 +42,19 @@ DB_PASSWORD=lrharvester
 DB_PORT=5432
 ```
 
+## Execução automática de todos os passos
+
+Para executar todo o processo de correção em uma única operação, use o script `run_all.py`:
+
+```bash
+python run_all.py
+```
+
+Este script executará sequencialmente todos os 11 passos do processo de correção, exibindo o progresso de forma clara e detalhada. Em caso de falha em qualquer etapa, a execução será interrompida.
+
 ## Processo de correção passo a passo
+
+Alternativamente, você pode executar cada etapa individualmente:
 
 ### Passo 1: Criar e preencher tabela de identificadores incorretos
 
@@ -169,6 +181,7 @@ brcris_fix/
 ├── requirements.txt          # Dependências do projeto
 ├── .env.example              # Exemplo de configuração
 ├── step0_setup_env.sh        # Script de configuração inicial
+├── run_all.py                # Script para executar todos os passos automaticamente
 ├── scripts/                  # Scripts Python para cada passo
 │   ├── step1_create_and_fill_tables.py
 │   ├── step2_update_orcid_with_hash.py

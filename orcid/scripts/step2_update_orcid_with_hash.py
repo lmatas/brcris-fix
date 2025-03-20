@@ -38,7 +38,9 @@ def update_with_hash():
         cursor = conn.cursor()
         
         # Obtener registros que necesitan actualización
-        cursor.execute("SELECT COUNT(*) FROM wrong_orcid_semantic_identifier WHERE new_id IS NULL")
+        query = "SELECT COUNT(*) FROM wrong_orcid_semantic_identifier WHERE new_id IS NULL"
+        print(f"Operación: {query}")
+        cursor.execute(query)
         total_records = cursor.fetchone()[0]
         print(f"Se encontraron {total_records} registros para actualizar...")
         
@@ -46,7 +48,9 @@ def update_with_hash():
             print("No hay registros para actualizar. Paso 2 completado.")
             return True
         
-        cursor.execute("SELECT id, new_semantic_id FROM wrong_orcid_semantic_identifier WHERE new_id IS NULL")
+        query = "SELECT id, new_semantic_id FROM wrong_orcid_semantic_identifier WHERE new_id IS NULL"
+        print(f"Operación: {query}")
+        cursor.execute(query)
         records = cursor.fetchall()
         
         # Variables para el seguimiento
@@ -61,10 +65,8 @@ def update_with_hash():
                 hash_value = generate_xxhash64_int(new_semantic_id)
                 
                 # Actualizar el registro
-                cursor.execute(
-                    "UPDATE wrong_orcid_semantic_identifier SET new_id = %s WHERE id = %s",
-                    (hash_value, record_id)
-                )
+                update_query = "UPDATE wrong_orcid_semantic_identifier SET new_id = %s WHERE id = %s"
+                cursor.execute(update_query, (hash_value, record_id))
                 
                 # Actualizar el progreso
                 processed += 1
