@@ -1,5 +1,41 @@
 -- PASO 11 - FINALMENTE HACER MERGE DE LOS CAMPOS DE LAS ENTIDADES AFECTADAS Y QUE FUERON MARCADAS COMO DIRTY
 
+-- Eliminar temporalmente las constraints para mejorar el rendimiento
+-- Solo si las constraints existen
+
+-- Verificar y eliminar constraints de entity_fieldoccr
+
+  -- FK entity_fieldoccr a entity(uuid)
+ALTER TABLE IF EXISTS entity_fieldoccr DROP CONSTRAINT IF EXISTS fkg85y6bnncn3q9y762wvrwj08u;
+
+-- FK entity_fieldoccr a fieldoccr(id)
+ALTER TABLE IF EXISTS entity_fieldoccr DROP CONSTRAINT IF EXISTS fkaqxlq6pqglkl32ub46do5akpl;
+
+-- FK relation a entity(uuid) from_entity_id
+ALTER TABLE IF EXISTS relation DROP CONSTRAINT IF EXISTS fk9kavjxgi0tpvju15iab7petiw;
+
+-- FK relation a entity(uuid) to_entity_id
+ALTER TABLE IF EXISTS relation DROP CONSTRAINT IF EXISTS fk9wvqikvahl1a0x1xkcfdw42n;
+
+-- FK relation a relation_type(id)
+ALTER TABLE IF EXISTS relation DROP CONSTRAINT IF EXISTS fkgocmghsla07rat51y3w39n9tk;
+
+-- FK relation_fieldoccr a entity(uuid) from_entity_id
+ALTER TABLE IF EXISTS relation_fieldoccr DROP CONSTRAINT IF EXISTS relation_fieldoccr_entityfrom_uuid_fk;
+
+-- FK relation_fieldoccr a entity(uuid) to_entity_id
+ALTER TABLE IF EXISTS relation_fieldoccr DROP CONSTRAINT IF EXISTS relation_fieldoccr_entityto_uuid_fk;
+
+-- FK relation_fieldoccr a fieldoccr(id)
+ALTER TABLE IF EXISTS relation_fieldoccr DROP CONSTRAINT IF EXISTS relation_fieldoccr_fieldoccr_id_fk;
+
+-- FK relation_fieldoccr a relation_type(id)
+ALTER TABLE IF EXISTS relation_fieldoccr DROP CONSTRAINT IF EXISTS relation_fieldoccr_relation_type_id_fk;
+
+
+-- Desactivar temporalmente el chequeo de restricciones para mejorar rendimiento
+SET session_replication_role = 'replica';
+
 -- Drop indices if they exist
 DROP INDEX IF EXISTS idx_entity_dirty;
 DROP INDEX IF EXISTS idx_source_entity_deleted;
@@ -71,5 +107,49 @@ WHERE dirty = TRUE;
 UPDATE relation 
 SET dirty = FALSE
 WHERE dirty = TRUE;
+
+-- Reactivar el chequeo de restricciones después de completar todas las operaciones
+SET session_replication_role = 'origin';
+
+-- Restaurar las constraints que fueron eliminadas
+-- Vincula campos a entidades (CASCADE borra campos si se borra la entidad)
+ALTER TABLE entity_fieldoccr ADD CONSTRAINT fkg85y6bnncn3q9y762wvrwj08u 
+    FOREIGN KEY (entity_id) REFERENCES entity(uuid) ON DELETE CASCADE; 
+
+-- Vincula campos a su definición
+ALTER TABLE entity_fieldoccr ADD CONSTRAINT fkaqxlq6pqglkl32ub46do5akpl 
+    FOREIGN KEY (fieldoccr_id) REFERENCES fieldoccr(id); 
+
+-- Vincula relación con entidad origen (CASCADE borra relación si se borra la entidad)
+ALTER TABLE relation ADD CONSTRAINT fk9kavjxgi0tpvju15iab7petiw 
+    FOREIGN KEY (from_entity_id) REFERENCES entity(uuid) ON DELETE CASCADE; 
+
+-- Vincula relación con entidad destino (CASCADE borra relación si se borra la entidad)
+ALTER TABLE relation ADD CONSTRAINT fk9wvqikvahl1a0x1xkcfdw42n 
+    FOREIGN KEY (to_entity_id) REFERENCES entity(uuid) ON DELETE CASCADE; 
+
+-- Vincula relación con su tipo
+ALTER TABLE relation ADD CONSTRAINT fkgocmghsla07rat51y3w39n9tk 
+    FOREIGN KEY (relation_type_id) REFERENCES relation_type(id); 
+
+-- Vincula campo de relación con entidad origen (CASCADE borra campos si se borra la entidad)
+ALTER TABLE relation_fieldoccr ADD CONSTRAINT relation_fieldoccr_entityfrom_uuid_fk 
+    FOREIGN KEY (from_entity_id) REFERENCES entity(uuid) ON DELETE CASCADE; 
+
+-- Vincula campo de relación con entidad destino (CASCADE borra campos si se borra la entidad)
+ALTER TABLE relation_fieldoccr ADD CONSTRAINT relation_fieldoccr_entityto_uuid_fk 
+    FOREIGN KEY (to_entity_id) REFERENCES entity(uuid) ON DELETE CASCADE; 
+
+-- Vincula campo de relación con su definición
+ALTER TABLE relation_fieldoccr ADD CONSTRAINT relation_fieldoccr_fieldoccr_id_fk 
+    FOREIGN KEY (fieldoccr_id) REFERENCES fieldoccr(id);
+
+-- Vincula campo de relación con su tipo de relación
+ALTER TABLE relation_fieldoccr ADD CONSTRAINT relation_fieldoccr_relation_type_id_fk 
+    FOREIGN KEY (relation_type_id) REFERENCES relation_type(id); 
+
+-- Opcional: verificar integridad de datos después de las operaciones
+-- SELECT count(*) FROM entity WHERE uuid NOT IN (SELECT entity_id FROM entity_fieldoccr) AND dirty = FALSE;
+-- SELECT count(*) FROM relation WHERE dirty = FALSE AND NOT EXISTS (SELECT 1 FROM relation_fieldoccr WHERE relation_fieldoccr.relation_type_id = relation.relation_type_id AND relation_fieldoccr.from_entity_id = relation.from_entity_id AND relation_fieldoccr.to_entity_id = relation.to_entity_id);
 
 
