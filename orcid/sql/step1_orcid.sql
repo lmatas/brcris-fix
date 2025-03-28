@@ -18,7 +18,7 @@ CREATE INDEX IF NOT EXISTS idx_wrong_orcid_semantic_identifier_new_semantic_id O
 
 -- Insertar los identificadores ORCID incorrectos
 INSERT INTO wrong_orcid_semantic_identifier 
-(SELECT id, semantic_id, NULL, replace(semantic_id, 'orcid::https://orcid.org/', '')
+(SELECT id, semantic_id, NULL, replace(semantic_id, 'https://orcid.org/', '')
  FROM public.semantic_identifier
  WHERE semantic_id LIKE 'orcid::https%' 
  AND NOT EXISTS (
