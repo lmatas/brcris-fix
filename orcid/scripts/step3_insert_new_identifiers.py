@@ -34,6 +34,8 @@ def insert_new_identifiers():
             return False
             
         print(f"Ejecutando script SQL: {sql_file_path}")
+        
+        # Variables para el seguimiento del progreso
         start_time = time.time()
         
         # Leer el contenido del archivo SQL
@@ -61,8 +63,8 @@ def insert_new_identifiers():
         
         # Confirmar cambios
         conn.commit()
-            
-        # Mostrar resumen
+        
+        # Mostrar resumen final
         total_time = time.time() - start_time
         print(f"\n\nPaso 3 completado con éxito.")
         print(f"Tiempo total: {total_time/60:.2f} minutos ({total_time:.2f} segundos)")
@@ -78,3 +80,6 @@ def insert_new_identifiers():
         if conn:
             conn.close()
             print("Conexión cerrada.")
+
+if __name__ == "__main__":
+    insert_new_identifiers()

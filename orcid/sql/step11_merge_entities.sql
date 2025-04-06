@@ -55,22 +55,14 @@ BEGIN
     AND se.deleted = FALSE;
 
     -- 2. Verificar si hay entidades dirty sin source_entities (no debería ocurrir)
-    DO $$
-    DECLARE
-        count_orphan_dirty INTEGER;
-    BEGIN
-        SELECT COUNT(*) INTO count_orphan_dirty
-        FROM entity e
-        WHERE e.dirty = TRUE
-        AND NOT EXISTS (SELECT 1 FROM aux_entity_map am WHERE am.entity_id = e.uuid);
-        
-        IF count_orphan_dirty > 0 THEN
-            RAISE NOTICE '¡ADVERTENCIA! Se encontraron % entidades dirty sin source_entities. Esto no debería ocurrir.', count_orphan_dirty;
-        END IF;
-    END $$;
+    RAISE NOTICE '% entidades dirty sin source_entities (posible error)', 
+        (SELECT COUNT(*) FROM entity e WHERE e.dirty = TRUE 
+         AND NOT EXISTS (SELECT 1 FROM aux_entity_map am WHERE am.entity_id = e.uuid));
 
     -- Crear índice en source_id después de insertar
     CREATE INDEX ON aux_entity_map(source_id);
+    CREATE INDEX ON aux_entity_map(entity_id);
+    
 
     -- Actualizar estadísticas
     ANALYZE aux_entity_map;

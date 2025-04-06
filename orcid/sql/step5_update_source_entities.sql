@@ -2,7 +2,7 @@
 -- POR EL SEMANTIC ID DEL ORCID CORREGIDO
 
 -- Desactivar restricción
-ALTER TABLE source_entity_semantic_identifier DROP CONSTRAINT fk9bf1gs0tx86f4eewbws4hkytp;
+ALTER TABLE source_entity_semantic_identifier DROP CONSTRAINT IF EXISTS fk9bf1gs0tx86f4eewbws4hkytp;
 
 -- Actualizar referencias en source_entity_semantic_identifier
 UPDATE public.source_entity_semantic_identifier sesi

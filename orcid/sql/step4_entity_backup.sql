@@ -1,3 +1,7 @@
+-- Indices para acelerar las queries
+CREATE INDEX IF NOT EXISTS ssi_entity_id ON public.source_entity_semantic_identifier(entity_id);
+CREATE INDEX IF NOT EXISTS ssi_semantic_id ON public.source_entity_semantic_identifier(semantic_id);
+
 -- Crear una tabla para guardar la información de las entidades y sus identificadores
 CREATE TABLE public.wrong_orcid_entity_backup AS
 SELECT 
