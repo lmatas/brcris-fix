@@ -24,19 +24,16 @@ def merge_dirty_entities():
             print("Error: No se pudo establecer conexión a la base de datos.")
             return False
         
+        # Añadir después de establecer la conexión pero antes de ejecutar cualquier consulta
+
+        def notice_processor(diag):
+            print(f"NOTICE: {diag.message_primary}")
+
         # Configurar la conexión para mostrar los NOTICE en pantalla
-        # Esto es crucial para ver los mensajes generados por RAISE NOTICE en los procedures
         conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-        
-        # Configurar un handler para mostrar los mensajes NOTICE en pantalla
-        def notice_handler(notice):
-            notice_text = str(notice).strip()
-            if notice_text:
-                print(f"NOTICE: {notice_text}")
-        
-        # Asignar el handler a la conexión
-        conn.set_notice_handler(notice_handler)
-        
+        # Agregar el manejador de notificaciones (usar set_notice_receiver en lugar de set_notice_handler)
+        psycopg2.extensions.set_notice_receiver(conn, notice_processor)
+    
         # Ruta al archivo SQL
         sql_file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
                                     'sql', 'step11_merge_entities.sql')

@@ -2,13 +2,11 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# Crear archivo .env con configuración de base de datos
-cat > .env << EOL
-DB_HOST=localhost
-DB_NAME=postgres
-DB_USER=postgres
-DB_PASSWORD=
-DB_PORT=5432
-EOL
+# Check if .env file exists, if not, copy the example file
+if [ ! -f .env ]; then
+    echo "Creando archivo .env a partir de .env.example..."
+    cp .env.example .env
+fi
+
 
 echo "Entorno configurado y archivo .env creado."

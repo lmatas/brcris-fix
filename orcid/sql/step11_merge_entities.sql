@@ -22,6 +22,7 @@ BEGIN
     ALTER TABLE IF EXISTS relation_fieldoccr DROP CONSTRAINT IF EXISTS relation_fieldoccr_entityto_uuid_fk;
     ALTER TABLE IF EXISTS relation_fieldoccr DROP CONSTRAINT IF EXISTS relation_fieldoccr_fieldoccr_id_fk;
     ALTER TABLE IF EXISTS relation_fieldoccr DROP CONSTRAINT IF EXISTS relation_fieldoccr_relation_type_id_fk;
+    
 
     -- Desactivar temporalmente el chequeo de restricciones
     RAISE NOTICE 'Desactivando chequeo de restricciones...';
@@ -31,6 +32,9 @@ BEGIN
     CREATE INDEX IF NOT EXISTS idx_entity_dirty ON entity(dirty) WHERE dirty = TRUE;
     CREATE INDEX IF NOT EXISTS idx_source_entity_deleted ON source_entity(deleted) WHERE deleted = FALSE;
     CREATE INDEX IF NOT EXISTS idx_source_entity_final_id ON source_entity(final_entity_id);
+    CREATE INDEX IF NOT EXISTS idx_source_relation_from_entity_id ON source_relation(from_entity_id);
+    CREATE INDEX IF NOT EXISTS idx_source_relation_to_entity_id ON source_relation(to_entity_id);
+    CREATE INDEX IF NOT EXISTS idx_srf_relation_entities ON source_relation_fieldoccr(relation_type_id, from_entity_id, to_entity_id);
 
    -- Crear tabla auxiliar unificada con entidades dirty y sus source entities
     RAISE NOTICE 'Creando tabla auxiliar unificada para entidades dirty y sus source entities...';
@@ -150,32 +154,16 @@ BEGIN
     IF NOT EXISTS (SELECT FROM pg_tables WHERE tablename = 'aux_entity_map') THEN
         RAISE EXCEPTION 'La tabla aux_entity_map no existe. Ejecute prepare_merge_environment primero.';
     END IF;
-       
+  
     -- Crear tabla temporal para las nuevas relaciones a insertar usando directamente aux_entity_map
     RAISE NOTICE 'Creando tabla temporal para nuevas relaciones...';
     DROP TABLE IF EXISTS tmp_new_relations;
     CREATE TEMP TABLE tmp_new_relations AS
-    SELECT DISTINCT 
-        sr.relation_type_id, 
-        e1.uuid AS from_entity_id, 
-        e2.uuid AS to_entity_id, 
-        sr.from_entity_id AS source_from_entity_id,
-        sr.to_entity_id AS source_to_entity_id,
-        TRUE AS dirty
-    FROM source_relation sr
-    JOIN aux_entity_map aem1 ON sr.from_entity_id = aem1.source_id
-    JOIN aux_entity_map aem2 ON sr.to_entity_id = aem2.source_id
-    JOIN entity e1 ON aem1.entity_id = e1.uuid
-    JOIN entity e2 ON aem2.entity_id = e2.uuid
-    WHERE aem1.source_id IS NOT NULL AND aem2.source_id IS NOT NULL;
+    select se1.final_entity_id as from_entity_id, sr.relation_type_id, se2.final_entity_id as to_entity_id, sr.from_entity_id as source_from_entity_id, sr.to_entity_id as source_to_entity_id, true as dirty  
+    from source_relation sr, source_entity se1, source_entity se2
+    where exists (select 1 from aux_entity_map aem where aem.source_id = sr.from_entity_id or aem.source_id = sr.to_entity_id )
+    and sr.from_entity_id = se1.uuid and sr.to_entity_id = se2.uuid; 
 
-    -- Contar y reportar el número de filas en tmp_new_relations
-    DECLARE
-        relation_count BIGINT;
-    BEGIN
-        SELECT COUNT(*) INTO relation_count FROM tmp_new_relations;
-        RAISE NOTICE 'Se han identificado % relaciones para procesar', relation_count;
-    END;
     
     -- Crear índices para optimizar la consulta posterior
     CREATE INDEX ON tmp_new_relations(relation_type_id, from_entity_id, to_entity_id);
