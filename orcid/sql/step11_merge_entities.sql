@@ -202,7 +202,15 @@ BEGIN
     FROM tmp_new_relations tnr
     JOIN source_relation_fieldoccr sro ON sro.relation_type_id = tnr.relation_type_id
                                     AND sro.from_entity_id = tnr.source_from_entity_id
-                                    AND sro.to_entity_id = tnr.source_to_entity_id;
+                                    AND sro.to_entity_id = tnr.source_to_entity_id
+    WHERE NOT EXISTS (
+        SELECT 1 
+        FROM relation_fieldoccr rfo
+        WHERE rfo.from_entity_id = tnr.from_entity_id
+          AND rfo.relation_type_id = tnr.relation_type_id
+          AND rfo.to_entity_id = tnr.to_entity_id
+          AND rfo.fieldoccr_id = sro.fieldoccr_id
+    );
 
     RAISE NOTICE 'Inserción de campos de relaciones completada';
 
