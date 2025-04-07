@@ -141,15 +141,16 @@ Este passo:
 - Marca como "sujas" (dirty) as entidades afetadas pelas mudanças.
 - Essas entidades serão processadas posteriormente para atualizar seus campos.
 
-### Passo 9: Atualizar referências finais de entidades
+### Passo 9: Eliminar source entities marcadas como eliminadas
 
 ```bash
-python scripts/step9_update_final_entities.py
+python scripts/step09_delete_source_entities.py
 ```
 
 Este passo:
-- Atualiza as referências `final_entity_id` em `source_entity`.
-- Estabelece as relações corretas entre entidades fonte e entidades finais.
+- Modifica as restrições de chave estrangeira para adicionar CASCADE DELETE nas tabelas relacionadas.
+- Elimina registros de source_entity marcados como deleted=true.
+- Limpa o banco de dados removendo entidades fonte não utilizadas.
 
 ### Passo 10: Excluir entidades com identificadores errôneos
 
@@ -191,7 +192,7 @@ brcris_fix/
 │   ├── step6_update_entity_backup.py
 │   ├── step7_update_entity_semantic.py
 │   ├── step8_mark_entities_dirty.py
-│   ├── step9_update_final_entities.py
+│   ├── step09_delete_source_entities.py
 │   ├── step10_delete_old_entities.py
 │   └── step11_merge_entities.py
 ├── sql/                      # Scripts SQL utilizados pelos scripts Python
@@ -203,7 +204,7 @@ brcris_fix/
 │   ├── step6_update_entity_backup.sql
 │   ├── step7_update_semantic.sql
 │   ├── step8_mark_dirty.sql
-│   ├── step9_update_final_entities.sql
+│   ├── step09_delete_source_entities.sql
 │   ├── step10_delete_old_entities.sql
 │   └── step11_merge_entities.sql
 └── utils/                    # Utilitários comuns

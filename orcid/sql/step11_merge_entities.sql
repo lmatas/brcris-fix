@@ -173,7 +173,7 @@ BEGIN
     -- Insertar solo las relaciones que no existan previamente
     RAISE NOTICE 'Insertando nuevas relaciones...';
     INSERT INTO relation (relation_type_id, from_entity_id, to_entity_id, dirty)
-    SELECT tnr.relation_type_id, tnr.from_entity_id, tnr.to_entity_id, tnr.dirty
+    SELECT DISTINCT tnr.relation_type_id, tnr.from_entity_id, tnr.to_entity_id, tnr.dirty
     FROM tmp_new_relations tnr
     WHERE NOT EXISTS (
         SELECT 1 FROM relation r

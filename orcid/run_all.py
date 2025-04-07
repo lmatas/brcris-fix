@@ -40,7 +40,7 @@ def run_all_steps():
         (6, "Actualizar tabla de backup de entidades", "step6_update_entity_backup.py", "update_entity_backup"),
         (7, "Actualizar identificadores en la tabla de entidades", "step7_update_entity_semantic.py", "update_entity_semantic"),
         (8, "Marcar entidades como 'sucias'", "step8_mark_entities_dirty.py", "mark_entities_dirty"),
-        (9, "Actualizar referencias finales de entidades", "step9_update_final_entities.py", "update_final_entities"),
+        (9, "Eliminar source entities marcadas como eliminadas", "step09_delete_source_entities.py", "delete_source_entities"),
         (10, "Excluir entidades con identificadores erróneos", "step10_delete_old_entities.py", "delete_wrong_entities"),
         (11, "Ejecutar merge de campos para entidades afectadas", "step11_merge_entities.py", "merge_dirty_entities")
     ]
