@@ -1,9 +1,7 @@
 -- create indexes for provenance on source_id field
 CREATE INDEX provenance_source_id_idx ON public.provenance (source_id);
 CREATE UNIQUE INDEX provenance_id_idx ON public.provenance (id,source_id);
-
 CREATE INDEX idx_source_entity_provenance_id ON source_entity (provenance_id);
-
 CREATE INDEX idx_semantic_identifier_semantic_id_pattern ON public.semantic_identifier (semantic_id text_pattern_ops);
 
 -- oasisbr provenances
@@ -96,7 +94,7 @@ SET deleted = true
 FROM aux_oasisbr_source_entities_from_oasis aose
 WHERE aose.source_entity_id = se."uuid";
 
--- crear una tabla con las entidades que aun tienes más de un lattes como semantic id
+-- crear una tabla con las entidades que aun tienes más de un lattes como semantic id (casos de multiples lattes que no vienen de oasisbr)
 create table aux_diagnose_multiple_lattes_entities as
 select sesi.entity_id
 from entity_semantic_identifier sesi, semantic_identifier si 
@@ -104,9 +102,6 @@ where sesi.semantic_id = si.id and si.semantic_id like 'lattes%'
 group by sesi.entity_id
 having count(*) > 1;
 
--- obtener los provenance donde hay ids repetidos
-select distinct p.source_id
-from source_entity se, aux_diagnose_multiple_lattes_entities admle, provenance p  
-where se.final_entity_id = admle.entity_id and p.id = se.provenance_id
+
 
 
