@@ -320,9 +320,9 @@ BEGIN
         PERFORM process_dirty_relations();
         
         -- Paso 4: Restablecimiento y limpieza
-        step_name := 'restore_environment';
-        RAISE NOTICE 'Ejecutando paso 4: %', step_name;
-        PERFORM restore_environment();
+        -- step_name := 'restore_environment';
+        -- RAISE NOTICE 'Ejecutando paso 4: %', step_name;
+        -- PERFORM restore_environment();
         
     EXCEPTION WHEN OTHERS THEN
         -- Capturar detalles del error
