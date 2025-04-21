@@ -6,8 +6,9 @@ ALTER TABLE source_entity_semantic_identifier ADD CONSTRAINT fkequg2xow14h1xdkde
     FOREIGN KEY (entity_id) REFERENCES source_entity(uuid) ON DELETE CASCADE;
 
 -- 2. source_entity_fieldoccr
-ALTER TABLE source_entity_fieldoccr DROP CONSTRAINT IF EXISTS fkdh0o132pu38ng0ey8oh6ikkn1;
-ALTER TABLE source_entity_fieldoccr ADD CONSTRAINT fkdh0o132pu38ng0ey8oh6ikkn1 
+-- CORREGIR EL NOMBRE DE LA RESTRICCIÓN AL INDICADO EN EL ERROR
+ALTER TABLE source_entity_fieldoccr DROP CONSTRAINT IF EXISTS fk2f3wc4b3huh74134hloikiou7;
+ALTER TABLE source_entity_fieldoccr ADD CONSTRAINT fk2f3wc4b3huh74134hloikiou7 
     FOREIGN KEY (entity_id) REFERENCES source_entity(uuid) ON DELETE CASCADE;
 
 -- 3. source_relation (from_entity_id)
