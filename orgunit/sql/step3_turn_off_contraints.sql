@@ -1,7 +1,7 @@
 -- Constraints en ENTITY_FIELDOCCR
 ALTER TABLE entity_fieldoccr
    DROP CONSTRAINT IF EXISTS fkg85y6bnncn3q9y762wvrwj08u, -- FK a entity (entity_id)
-   DROP CONSTRAINT IF EXISTS fkaqxlq6pqglkl32ub46do5akpl; -- FK a fieldoccr (fieldoccr_id)
+   DROP CONSTRAINT IF EXISTS fkaqxlq6pqglkl32ub46do5akpl; -- FK a field_occurrence (fieldoccr_id)
 
 -- Constraints en ENTITY_SEMANTIC_IDENTIFIER
 ALTER TABLE entity_semantic_identifier
@@ -18,7 +18,7 @@ ALTER TABLE relation_fieldoccr
    DROP CONSTRAINT IF EXISTS relation_fieldoccr_entityfrom_uuid_fk, -- FK a entity (from_entity_id)
    DROP CONSTRAINT IF EXISTS relation_fieldoccr_entityto_uuid_fk,   -- FK a entity (to_entity_id)
    DROP CONSTRAINT IF EXISTS fkjottc07w9a00w4ta9u48br53m,          -- FK a relation (relation_id) -- Nombre original, no encontrado en DDL de ORCID
-   DROP CONSTRAINT IF EXISTS relation_fieldoccr_fieldoccr_id_fk,    -- FK a fieldoccr (fieldoccr_id)
+   DROP CONSTRAINT IF EXISTS relation_fieldoccr_fieldoccr_id_fk,    -- FK a field_occurrence (fieldoccr_id)
    DROP CONSTRAINT IF EXISTS relation_fieldoccr_relation_type_id_fk; -- FK a relation_type (relation_type_id)
 
 -- Constraints en SOURCE_ENTITY
@@ -29,7 +29,7 @@ ALTER TABLE source_entity
 ALTER TABLE source_entity_fieldoccr
     -- El DDL de ORCID usa fk2f3wc4b3huh74134hloikiou7 para la FK a source_entity
     DROP CONSTRAINT IF EXISTS fk2f3wc4b3huh74134hloikiou7, -- FK a source_entity (entity_id)
-    DROP CONSTRAINT IF EXISTS fk6w85u7cf1rp9mu9u83lqf1g0c; -- FK a fieldoccr (fieldoccr_id)
+    DROP CONSTRAINT IF EXISTS fk6w85u7cf1rp9mu9u83lqf1g0c; -- FK a field_occurrence (fieldoccr_id)
 
 -- Constraints en SOURCE_ENTITY_SEMANTIC_IDENTIFIER
 ALTER TABLE source_entity_semantic_identifier
@@ -50,5 +50,5 @@ ALTER TABLE source_relation_fieldoccr
     DROP CONSTRAINT IF EXISTS source_relation_fieldoccr_source_entityfrom_uuid_fk, -- FK a source_entity (from_entity_id)
     DROP CONSTRAINT IF EXISTS source_relation_fieldoccr_source_entityto_uuid_fk,   -- FK a source_entity (to_entity_id)
     DROP CONSTRAINT IF EXISTS source_relation_fieldoccr_source_relation_id_fk,     -- FK a source_relation (relation_id)
-    DROP CONSTRAINT IF EXISTS source_relation_fieldoccr_fieldoccr_id_fk,         -- FK a fieldoccr (fieldoccr_id)
+    DROP CONSTRAINT IF EXISTS source_relation_fieldoccr_fieldoccr_id_fk,         -- FK a field_occurrence (fieldoccr_id)
     DROP CONSTRAINT IF EXISTS source_relation_fieldoccr_relation_type_id_fk;    -- FK a relation_type (relation_type_id)
