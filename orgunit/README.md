@@ -8,10 +8,10 @@ Existem entidades `OrgUnit` no banco de dados que não correspondem a unidades o
 
 ## Solução
 
-O sistema utiliza uma lista de identificadores semânticos válidos (geralmente extraídos de um arquivo XML ou similar) para identificar quais `OrgUnits` são legítimas. As etapas do processo são:
+O sistema utiliza uma lista de identificadores semânticos válidos (geralmente extraídos de um arquivo de texto como `valid_semantic_ids.txt`) para identificar quais `OrgUnits` são legítimas. As etapas do processo são:
 
 1.  **Criação de Tabelas Auxiliares**: Tabelas temporárias são criadas para armazenar os identificadores válidos e os UUIDs das entidades válidas e inválidas.
-2.  **Carga de Identificadores Válidos**: Os identificadores semânticos válidos são lidos de um arquivo de entrada (`orgunit.xml` por padrão) e carregados em uma tabela auxiliar. O hash xxHash64 é calculado para cada identificador.
+2.  **Carga de Identificadores Válidos**: Os identificadores semânticos válidos são lidos de um arquivo de entrada (`valid_semantic_ids.txt` por padrão) e carregados em uma tabela auxiliar. O hash xxHash64 é calculado para cada identificador.
 3.  **Desativação Temporária de Constraints**: As restrições de chave estrangeira (Foreign Key constraints) que referenciam as tabelas a serem modificadas são temporariamente desativadas para permitir a exclusão de dados.
 4.  **Identificação de Entidades Válidas e Inválidas**: As tabelas auxiliares são populadas para marcar quais `OrgUnits` (tanto `entity` quanto `source_entity`) são consideradas válidas (possuem um identificador semântico válido) e quais são inválidas.
 5.  **Exclusão de Dados Inválidos**: As `OrgUnits` inválidas e todos os registros relacionados a elas em tabelas como `source_entity_fieldoccr`, `source_entity_semantic_identifier`, `source_relation`, `entity_fieldoccr`, `entity_semantic_identifier`, `relation`, etc., são excluídos.
@@ -22,7 +22,7 @@ O sistema utiliza uma lista de identificadores semânticos válidos (geralmente 
 *   Python 3.x
 *   `pip` (gerenciador de pacotes Python)
 *   Acesso ao banco de dados PostgreSQL onde os dados do BRCris estão armazenados.
-*   Um arquivo contendo a lista de identificadores semânticos válidos para `OrgUnits` (por exemplo, `orgunit.xml`).
+*   Um arquivo de texto contendo a lista de identificadores semânticos válidos para `OrgUnits` (por exemplo, `valid_semantic_ids.txt`).
 
 ## Instalação
 
@@ -36,15 +36,15 @@ O sistema utiliza uma lista de identificadores semânticos válidos (geralmente 
 
 ## Configuração
 
-1.  **Arquivo de Entrada**: Certifique-se de que o arquivo com os identificadores semânticos válidos (por exemplo, `orgunit.xml`) esteja presente no diretório raiz `orgunit`. O script `step2_load_valid_semantic_ids.py` espera encontrá-lo lá por padrão. Se o nome ou local for diferente, ajuste o script correspondente.
+1.  **Arquivo de Entrada**: Certifique-se de que o arquivo com os identificadores semânticos válidos (por exemplo, `valid_semantic_ids.txt`) esteja presente no diretório raiz `orgunit`. O script `step2_load_valid_semantic_ids.py` espera encontrá-lo lá por padrão com o nome `valid_semantic_ids.txt`. Se o nome ou local for diferente, ajuste o script correspondente ou forneça o caminho como argumento.
 2.  **Variáveis de Ambiente**: Crie um arquivo `.env` na raiz do diretório `orgunit` (o script `step0_setup_env.sh` copia `.env.example` para `.env` se ele não existir). Edite o arquivo `.env` com as credenciais corretas do seu banco de dados:
-    ```dotenv
-    DB_HOST=localhost
-    DB_NAME=lrharvester
-    DB_USER=lrharvester
-    DB_PASSWORD=lrharvester
-    DB_PORT=5432
-    ```
+```dotenv
+DB_HOST=localhost
+DB_NAME=lrharvester
+DB_USER=lrharvester
+DB_PASSWORD=lrharvester
+DB_PORT=5432
+```
 
 ## Processo de Limpeza Passo a Passo
 
@@ -63,10 +63,10 @@ Cria as tabelas temporárias necessárias (`aux_valid_orgunit_semantic_id`, `aux
 ### Passo 2: Carregar Identificadores Semânticos Válidos
 
 ```bash
-python step2_load_valid_semantic_ids.py [caminho_para_arquivo_xml]
+python step2_load_valid_semantic_ids.py [caminho_para_arquivo_txt]
 ```
 
-Lê o arquivo XML (padrão: `../orgunit.xml`), extrai os identificadores semânticos, calcula o hash xxHash64 e os insere na tabela `aux_valid_orgunit_semantic_id`. O argumento com o caminho para o arquivo XML é opcional.
+Lê o arquivo de texto (padrão: `../valid_semantic_ids.txt`), extrai os identificadores semânticos, calcula o hash xxHash64 e os insere na tabela `aux_valid_orgunit_semantic_id`. O argumento com o caminho para o arquivo de texto é opcional.
 
 ### Passo 3: Desativar Constraints
 
@@ -109,7 +109,7 @@ orgunit/
 ├── .env.example              # Exemplo de configuração do banco de dados
 ├── .env                      # Configuração do banco de dados (criado a partir do .env.example)
 ├── step0_setup_env.sh        # Script para configurar o ambiente virtual
-├── orgunit.xml               # Arquivo de exemplo/entrada com identificadores válidos
+├── valid_semantic_ids.txt    # Arquivo de exemplo/entrada com identificadores válidos
 ├── scripts/                  # Scripts Python para cada passo
 │   ├── step1_create_tables.py
 │   ├── step2_load_valid_semantic_ids.py
@@ -131,7 +131,7 @@ orgunit/
 ## Notas Técnicas
 
 *   O tipo de entidade `OrgUnit` é identificado pelo `entity_type_id = 1`.
-*   O script `step2` utiliza a biblioteca `xml.etree.ElementTree` para parsear o XML e `xxhash` para gerar o hash do identificador semântico.
+*   O script `step2` lê o arquivo `valid_semantic_ids.txt` e utiliza a biblioteca `xxhash` para gerar o hash do identificador semântico.
 *   Os scripts Python utilizam `psycopg2` para interagir com o banco de dados PostgreSQL.
-*   É crucial garantir que o arquivo de entrada (`orgunit.xml` ou similar) contenha **apenas** os identificadores semânticos válidos. Qualquer identificador presente nesse arquivo será considerado válido.
+*   É crucial garantir que o arquivo de entrada (`valid_semantic_ids.txt`) contenha **apenas** os identificadores semânticos válidos, um por linha. Qualquer identificador presente nesse arquivo será considerado válido.
 *   **Backup**: É altamente recomendável realizar um backup completo do banco de dados antes de executar este processo, especialmente em um ambiente de produção.
