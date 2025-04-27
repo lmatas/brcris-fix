@@ -1,3 +1,8 @@
+-- ATENÇÃO: Este arquivo SQL contém uma versão consolidada ou anterior das etapas de correção.
+-- O processo principal descrito no README.md utiliza scripts Python que executam
+-- os arquivos SQL individuais localizados no diretório 'sql/'.
+-- Este arquivo pode servir como referência, mas não deve ser executado como parte do fluxo padrão.
+
 -- Criação de índices para o campo source_id na tabela provenance para melhorar o desempenho das consultas
 CREATE INDEX provenance_source_id_idx ON public.provenance (source_id);
 CREATE UNIQUE INDEX provenance_id_idx ON public.provenance (id,source_id);

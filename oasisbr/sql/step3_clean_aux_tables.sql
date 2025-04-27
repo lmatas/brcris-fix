@@ -1,4 +1,3 @@
--- Limpeza da tabela aux_oasisbr_source_entities_from_oasis
 -- Filtra apenas entidades com mais de 1 identificador Lattes, que são as que apresentam problemas
 delete from aux_oasisbr_source_entities_from_oasis aose
 where not exists 
