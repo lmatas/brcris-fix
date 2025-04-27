@@ -5,10 +5,14 @@
 -- Indices for source entity related tables
 -- Corregido: Cambiado source_entity_id a entity_id y renombrado el índice
 CREATE INDEX IF NOT EXISTS idx_source_entity_fieldoccr_entity_id ON public.source_entity_fieldoccr (entity_id);
-CREATE INDEX IF NOT EXISTS idx_source_relation_fieldoccr_from_source_entity_id ON public.source_relation_fieldoccr (from_source_entity_id);
-CREATE INDEX IF NOT EXISTS idx_source_relation_fieldoccr_to_source_entity_id ON public.source_relation_fieldoccr (to_source_entity_id);
-CREATE INDEX IF NOT EXISTS idx_source_relation_from_source_entity_id ON public.source_relation (from_source_entity_id);
-CREATE INDEX IF NOT EXISTS idx_source_relation_to_source_entity_id ON public.source_relation (to_source_entity_id);
+-- Corregido: Cambiado from_source_entity_id a from_entity_id y renombrado el índice
+CREATE INDEX IF NOT EXISTS idx_source_relation_fieldoccr_from_entity_id ON public.source_relation_fieldoccr (from_entity_id);
+-- Corregido: Cambiado to_source_entity_id a to_entity_id y renombrado el índice
+CREATE INDEX IF NOT EXISTS idx_source_relation_fieldoccr_to_entity_id ON public.source_relation_fieldoccr (to_entity_id);
+-- Corregido: Cambiado from_source_entity_id a from_entity_id y renombrado el índice
+CREATE INDEX IF NOT EXISTS idx_source_relation_from_entity_id ON public.source_relation (from_entity_id);
+-- Corregido: Cambiado to_source_entity_id a to_entity_id y renombrado el índice
+CREATE INDEX IF NOT EXISTS idx_source_relation_to_entity_id ON public.source_relation (to_entity_id);
 CREATE INDEX IF NOT EXISTS idx_source_entity_semantic_identifier_entity_id ON public.source_entity_semantic_identifier (entity_id);
 CREATE INDEX IF NOT EXISTS idx_source_entity_semantic_identifier_semantic_id ON public.source_entity_semantic_identifier (semantic_id); -- Added for ORCID script performance
 CREATE INDEX IF NOT EXISTS idx_sesi_entity_id_semantic_id ON public.source_entity_semantic_identifier (entity_id, semantic_id); -- Added for ORCID script performance (composite)
