@@ -9,30 +9,49 @@ Entities sourced from OasisBR sometimes incorrectly link multiple Lattes identif
 ## Prerequisites
 
 *   Python 3.x
-*   PostgreSQL database containing the BRCris data.
-*   Required Python packages (install via `pip install -r requirements.txt`)
+*   `pip` (Python package manager)
+*   Access to the PostgreSQL database where BRCris data is stored.
+*   Required Python packages (see Setup).
 
 ## Setup
 
-1.  **Configure Database Connection:**
-    *   If it doesn't exist, run the setup script to create a `.env` file: `bash step0_setup_env.sh`
-    *   Edit the generated `.env` file with your PostgreSQL database connection details (host, port, database name, user, password).
-2.  **Install Dependencies:**
-    *   Ensure you are in the `oasisbr` directory.
-    *   If you haven't already, run the setup script which also creates a virtual environment and installs requirements: `bash step0_setup_env.sh`
-    *   Alternatively, manually create a virtual environment (`python3 -m venv venv`), activate it (`source venv/bin/activate`), and install packages (`pip install -r requirements.txt`).
+1.  **Clone Repository:** If you haven't already, clone the repository containing this project.
+2.  **Navigate to Directory:** Change into the `oasisbr` directory:
+    ```bash
+    cd path/to/brcris-fix/oasisbr
+    ```
+3.  **Configure Database Connection:**
+    *   Run the setup script. It will create a `.env` file from `.env.example` if it doesn't exist and set up a Python virtual environment.
+        ```bash
+        bash step0_setup_env.sh
+        ```
+    *   **Edit the `.env` file** with your PostgreSQL database connection details (host, port, database name, user, password).
+4.  **Activate Virtual Environment:**
+    ```bash
+    source venv/bin/activate
+    ```
+    *(The `step0_setup_env.sh` script already does this and installs requirements)*
 
 ## Execution Steps
 
-Execute the Python scripts sequentially from within the activated virtual environment (`source venv/bin/activate`) in the `oasisbr` directory:
+Execute the Python scripts sequentially from within the activated virtual environment (`source venv/bin/activate`) in the `oasisbr` directory. Each script corresponds to a step in the correction process and executes an associated SQL file from the `sql/` directory.
 
-1.  **`python scripts/step1_create_indices.py`**: Creates necessary database indices for performance.
-2.  **`python scripts/step2_create_aux_tables.py`**: Creates auxiliary tables to store intermediate data (provenance IDs, source entities, broken entities, Lattes semantic IDs).
-3.  **`python scripts/step3_clean_aux_tables.py`**: Cleans the `aux_oasisbr_source_entities_from_oasis` table, keeping only entries with multiple Lattes identifiers.
-4.  **`python scripts/step4_fix_entity_semantic_identifiers.py`**: Removes incorrect Lattes mappings from `entity_semantic_identifier` for broken entities and inserts the correct ones based on Lattes provenance data.
-5.  **`python scripts/step5_mark_entities_dirty.py`**: Marks the corrected final entities as 'dirty' so they are picked up by the merge process.
-6.  **`python scripts/step6_mark_source_entities_deleted.py`**: Creates a table (`aux_to_be_reloaded_oasisbr_records`) containing the `record_id`s that need reloading from OasisBR and marks the original problematic OasisBR source entities as 'deleted'.
-7.  **`python scripts/step7_diagnose_multiple_lattes.py`**: Creates a diagnostic table (`aux_diagnose_multiple_lattes_entities`) to identify any remaining entities (not necessarily from OasisBR) that still have multiple Lattes identifiers after the fix. This helps in identifying other potential data issues.
+**Navigate to the scripts directory:**
+```bash
+cd scripts
+```
+
+**Run the steps:**
+
+1.  **`python step1_create_indices.py`**: Creates necessary database indices for performance.
+2.  **`python step2_create_aux_tables.py`**: Creates auxiliary tables to store intermediate data (provenance IDs, source entities, broken entities, Lattes semantic IDs).
+3.  **`python step3_clean_aux_tables.py`**: Cleans the `aux_oasisbr_source_entities_from_oasis` table, keeping only entries with multiple Lattes identifiers.
+4.  **`python step4_fix_entity_semantic_identifiers.py`**: Removes incorrect Lattes mappings from `entity_semantic_identifier` for broken entities and inserts the correct ones based on Lattes provenance data.
+5.  **`python step5_mark_entities_dirty.py`**: Marks the corrected final entities as 'dirty' so they are picked up by the merge process.
+6.  **`python step6_mark_source_entities_deleted.py`**: Creates a table (`aux_to_be_reloaded_oasisbr_records`) containing the `record_id`s that need reloading from OasisBR and marks the original problematic OasisBR source entities as 'deleted'.
+7.  **`python step7_diagnose_multiple_lattes.py`**: Creates a diagnostic table (`aux_diagnose_multiple_lattes_entities`) to identify any remaining entities (not necessarily from OasisBR) that still have multiple Lattes identifiers after the fix. This helps in identifying other potential data issues.
+
+**(Return to the `oasisbr` directory if needed: `cd ..`)**
 
 ## Post-Execution
 
@@ -51,3 +70,5 @@ This directory contains the individual SQL scripts executed by the Python steps.
 *   `step5_mark_entities_dirty.sql`
 *   `step6_mark_source_entities_deleted.sql`
 *   `step7_diagnose_multiple_lattes.sql`
+
+## Project Structure
