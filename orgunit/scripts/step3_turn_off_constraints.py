@@ -4,20 +4,22 @@
 import time
 import sys
 import os
-# Ajusta la ruta para importar desde el directorio utils hermano de scripts
-try:
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Ir un nivel arriba para llegar al directorio 'orgunit'
-    parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
-    # Añadir el directorio 'orgunit' a sys.path para poder importar 'utils'
-    if parent_dir not in sys.path:
-        sys.path.insert(0, parent_dir)
-    # Importar funciones necesarias desde utils.db_utils
-    from utils.db_utils import get_connection
-except ImportError:
-    print("Error: No se pudo encontrar el módulo 'db_utils' en la carpeta 'utils' dentro del directorio padre.")
-    print("Asegúrate de que la estructura sea 'orgunit/utils/db_utils.py'.")
-    sys.exit(1)
+# Eliminar el ajuste de ruta para importar desde el directorio utils hermano de scripts
+# try:
+#     script_dir = os.path.dirname(os.path.abspath(__file__))
+#     # Ir un nivel arriba para llegar al directorio 'orgunit'
+#     parent_dir = os.path.abspath(os.path.join(script_dir, '..'))
+#     # Añadir el directorio 'orgunit' a sys.path para poder importar 'utils'
+#     if parent_dir not in sys.path:
+#         sys.path.insert(0, parent_dir)
+#     # Importar funciones necesarias desde utils.db_utils
+#     from utils.db_utils import get_connection
+# except ImportError:
+#     print("Error: No se pudo encontrar el módulo 'db_utils' en la carpeta 'utils' dentro del directorio padre.")
+#     print("Asegúrate de que la estructura sea 'orgunit/utils/db_utils.py'.")
+#     sys.exit(1)
+# Importar directamente desde el subdirectorio utils
+from utils.db_utils import get_connection
 
 def execute_sql_script(sql_filename="step3_turn_off_contraints.sql"):
     """
