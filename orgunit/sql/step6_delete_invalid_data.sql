@@ -5,7 +5,7 @@
 
 -- Delete source entity field occurrences linked to invalid source orgunits (Type 1)
 DELETE FROM public.source_entity_fieldoccr
-WHERE source_entity_id IN (SELECT source_entity_uuid FROM aux_invalid_source_orgunit);
+WHERE entity_id IN (SELECT source_entity_uuid FROM aux_invalid_source_orgunit);
 
 -- Delete source relation field occurrences linked to invalid source orgunits (Type 1)
 DELETE FROM public.source_relation_fieldoccr
