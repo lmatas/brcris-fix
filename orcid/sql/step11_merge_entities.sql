@@ -15,36 +15,7 @@ DECLARE
 BEGIN
     start_time := clock_timestamp();
     RAISE NOTICE 'Iniciando proceso de preparación para merge: %', start_time;
-
-    -- Desactivar Triggers (incluye FKs) para mejorar rendimiento
-    RAISE NOTICE 'Desactivando triggers USER en tablas afectadas...';
-    ALTER TABLE public.entity_fieldoccr DISABLE TRIGGER USER;
-    ALTER TABLE public.relation DISABLE TRIGGER USER;
-    ALTER TABLE public.relation_fieldoccr DISABLE TRIGGER USER;
-    -- Nota: No desactivamos triggers en 'entity' o 'source_*' a menos que sea necesario.
-
-    -- Creación de índices específicos (si aún no existen)
-    RAISE NOTICE 'Verificando/Creando índices necesarios...';
-    CREATE INDEX IF NOT EXISTS idx_entity_dirty ON entity(dirty) WHERE dirty = TRUE;
-    CREATE INDEX IF NOT EXISTS idx_source_entity_deleted ON source_entity(deleted) WHERE deleted = FALSE;
-    CREATE INDEX IF NOT EXISTS idx_source_entity_final_id ON source_entity(final_entity_id);
-    CREATE INDEX IF NOT EXISTS idx_source_relation_from_entity_id ON source_relation(from_entity_id);
-    CREATE INDEX IF NOT EXISTS idx_source_relation_to_entity_id ON source_relation(to_entity_id);
-    CREATE INDEX IF NOT EXISTS idx_srf_relation_entities ON source_relation_fieldoccr(relation_type_id, from_entity_id, to_entity_id);
-
-    RAISE NOTICE 'Borrando las referencias de source_entity a final_entity_id cuando deleted = TRUE...';
-    
-    -- Borrar las referencias de source_entity a final_entity_id cuando deleted = TRUE
-    UPDATE source_entity
-    SET final_entity_id = NULL
-    WHERE deleted = TRUE;
-
-    -- Borrar entidades que no estan referenciadas por ningun source entity
-    RAISE NOTICE 'Borrando entidades que no estan referenciadas por ningun source entity';
-
-	DELETE FROM public.entity 
-	where not exists (select 1 from source_entity se where se.final_entity_id = entity."uuid" );
-
+ 
    -- Crear tabla auxiliar unificada con entidades dirty y sus source entities
     RAISE NOTICE 'Creando tabla auxiliar unificada para entidades dirty y sus source entities...';
 
@@ -70,11 +41,6 @@ BEGIN
     CREATE INDEX ON aux_entity_map(source_id);
     -- CREATE INDEX ON aux_entity_map(entity_id); -- Ya creado arriba
 
-    -- Reportar estadísticas
-    RAISE NOTICE '% entidades dirty encontradas, % con source_entities asociadas',
-        (SELECT COUNT(DISTINCT entity_id) FROM aux_entity_map),
-        (SELECT COUNT(*) FROM aux_entity_map WHERE source_id IS NOT NULL);
-
     -- Calcular duración
     end_time := clock_timestamp();
     duration := end_time - start_time;
@@ -95,10 +61,10 @@ BEGIN
     start_time := clock_timestamp();
     RAISE NOTICE 'Iniciando proceso de merge de entidades dirty (con triggers desactivados): %', start_time;
 
-  
 
     -- Crear tabla temporal para los fieldoccrs a insertar usando directamente aux_entity_map
     RAISE NOTICE 'Creando tabla temporal para fieldoccrs...';
+    
     DROP TABLE IF EXISTS tmp_entity_fieldoccrs;
     CREATE TEMP TABLE tmp_entity_fieldoccrs AS
     SELECT DISTINCT aem.entity_id, sef.fieldoccr_id
@@ -106,7 +72,6 @@ BEGIN
     JOIN source_entity_fieldoccr sef ON sef.entity_id = aem.source_id
     WHERE aem.source_id IS NOT NULL;
     CREATE INDEX ON tmp_entity_fieldoccrs(entity_id);
-    ANALYZE tmp_entity_fieldoccrs;
 
     -- Eliminar fieldoccrs existentes de manera eficiente
     RAISE NOTICE 'Eliminando fieldoccrs existentes...';
@@ -117,14 +82,9 @@ BEGIN
     -- Nota: Si hay violaciones de FK (p.ej., fieldoccr_id no existe), fallará aquí.
     RAISE NOTICE 'Insertando nuevos fieldoccrs...';
     INSERT INTO entity_fieldoccr (entity_id, fieldoccr_id)
-    SELECT entity_id, fieldoccr_id FROM tmp_entity_fieldoccrs
-    ON CONFLICT (entity_id, fieldoccr_id) DO NOTHING; -- Añadido ON CONFLICT por si acaso, aunque el DELETE previo debería evitarlo
+    SELECT entity_id, fieldoccr_id FROM tmp_entity_fieldoccrs;
 
-    -- Ya no necesitamos tmp_entity_fieldoccrs, la liberamos
-    -- DROP TABLE tmp_entity_fieldoccrs;
-    -- RAISE NOTICE 'Tabla tmp_entity_fieldoccrs liberada';
-
-    -- Actualización de entidades en una sola consulta
+   -- Actualización de entidades en una sola consulta
     RAISE NOTICE 'Actualizando estado dirty de entidades...';
     UPDATE entity
     SET dirty = FALSE
