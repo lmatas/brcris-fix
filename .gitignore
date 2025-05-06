@@ -1,1 +1,8 @@
 venv
+oasisbr/scripts/utils/__pycache__/db_utils.cpython-312.pyc
+orcid/scripts/utils/__pycache__/db_utils.cpython-312.pyc
+.gitignore
+orgunit/.env
+.gitignore
+.gitignore
+orcid/scripts/utils/__pycache__/db_utils.cpython-312.pyc
