@@ -6,3 +6,7 @@ orgunit/.env
 .DS_Store
 orcid/.env
 *.pyc
+oasisbr/.env
+/orcid/scripts/utils/__pycache__
+/orcid/scripts/utils/__pycache__
+orcid/scripts/utils/__pycache__/db_utils.cpython-312.pyc
