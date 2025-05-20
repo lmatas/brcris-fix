@@ -184,6 +184,8 @@ DROP TABLE temp_orphaned_semantic_identifiers;
 -- referenciados en ninguna de las tablas de enlace:
 -- 'entity_fieldoccr', 'source_entity_fieldoccr',
 -- 'relation_fieldoccr', 'source_relation_fieldoccr'.
+-- Para acelerar la eliminación, se desactivan temporalmente las FKs
+-- que apuntan a 'field_occurrence'.
 -- =============================================================================
 
 -- Paso 5.1: Crear tabla temporal para almacenar los IDs de 'field_occurrence' huérfanos.
@@ -191,40 +193,42 @@ CREATE TABLE temp_orphaned_field_occurrences (
     field_occurrence_id int8 NOT NULL
 );
 
--- Paso 5.2: Poblar la tabla temporal con los IDs de 'field_occurrence' que no están referenciados.
 INSERT INTO temp_orphaned_field_occurrences (field_occurrence_id)
 SELECT fo.id
 FROM public.field_occurrence fo
 WHERE NOT EXISTS (
-    SELECT 1
-    FROM public.entity_fieldoccr efo
-    WHERE efo.fieldoccr_id = fo.id
-)
-AND NOT EXISTS (
     SELECT 1
     FROM public.source_entity_fieldoccr sefo
     WHERE sefo.fieldoccr_id = fo.id
 )
 AND NOT EXISTS (
     SELECT 1
-    FROM public.relation_fieldoccr rfo
-    WHERE rfo.fieldoccr_id = fo.id
-)
-AND NOT EXISTS (
-    SELECT 1
     FROM public.source_relation_fieldoccr srfo
     WHERE srfo.fieldoccr_id = fo.id
 );
-
 -- Paso 5.3: Crear un índice en la tabla temporal para búsquedas rápidas.
 CREATE INDEX idx_temp_orphaned_field_occurrences_id ON temp_orphaned_field_occurrences (field_occurrence_id);
 
--- Paso 5.4: Finalmente, borrar los 'field_occurrence' huérfanos.
+-- Paso 5.4: Deshabilitar FKs que apuntan a 'field_occurrence' para acelerar el DELETE.
+ALTER TABLE public.entity_fieldoccr DROP CONSTRAINT IF EXISTS fkcnvu6hyt4mihaxjsejgmhu15r;
+ALTER TABLE public.source_entity_fieldoccr DROP CONSTRAINT IF EXISTS fkitn5f8xb60m8w8t5ppsu4wgff;
+ALTER TABLE public.relation_fieldoccr DROP CONSTRAINT IF EXISTS fk9fdsesc6ey8c831brij4u1rob;
+ALTER TABLE public.source_relation_fieldoccr DROP CONSTRAINT IF EXISTS fk10s6vmwa91jkhcc3m14debj7k;
+
+-- Paso 5.5: Finalmente, borrar los 'field_occurrence' huérfanos.
 DELETE FROM public.field_occurrence fo
 USING temp_orphaned_field_occurrences tmp
 WHERE fo.id = tmp.field_occurrence_id;
 
--- Paso 5.5: Eliminar la tabla temporal cuando ya no se necesite.
+-- Paso 5.6: Rehabilitar FKs que apuntan a 'field_occurrence'.
+-- Es crucial que los datos sean consistentes antes de rehabilitar las FKs.
+-- Dado que estamos eliminando registros huérfanos, esto debería ser seguro.
+ALTER TABLE public.entity_fieldoccr ADD CONSTRAINT fkcnvu6hyt4mihaxjsejgmhu15r FOREIGN KEY (fieldoccr_id) REFERENCES public.field_occurrence(id);
+ALTER TABLE public.source_entity_fieldoccr ADD CONSTRAINT fkitn5f8xb60m8w8t5ppsu4wgff FOREIGN KEY (fieldoccr_id) REFERENCES public.field_occurrence(id);
+ALTER TABLE public.relation_fieldoccr ADD CONSTRAINT fk9fdsesc6ey8c831brij4u1rob FOREIGN KEY (fieldoccr_id) REFERENCES public.field_occurrence(id);
+ALTER TABLE public.source_relation_fieldoccr ADD CONSTRAINT fk10s6vmwa91jkhcc3m14debj7k FOREIGN KEY (fieldoccr_id) REFERENCES public.field_occurrence(id);
+
+-- Paso 5.7: Eliminar la tabla temporal cuando ya no se necesite.
 DROP TABLE temp_orphaned_field_occurrences;
 
 -- =============================================================================
