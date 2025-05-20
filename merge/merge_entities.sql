@@ -68,7 +68,7 @@ BEGIN
     DROP TABLE IF EXISTS tmp_new_relations;
     CREATE TABLE tmp_new_relations (
         from_entity_id UUID,
-        relation_type_id UUID,
+        relation_type_id int8,
         to_entity_id UUID,
         source_from_entity_id UUID,
         source_to_entity_id UUID,
