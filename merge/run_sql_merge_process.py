@@ -57,13 +57,13 @@ def execute_sql_merge_from_file():
         
         # Ahora ejecutar el procedimiento principal definido en el archivo SQL
         print("\n" + "=" * 80)
-        print("Ejecutando el procedimiento principal execute_complete_merge_process()...")
+        print("Ejecutando el procedimiento principal de merge... (esto puede tardar un tiempo)")
         print("=" * 80)
         
         proc_start_time = time.time()
         # Asumiendo que el archivo SQL define una función llamada 'execute_complete_merge_process'
         # y que esta función es la que se debe llamar para iniciar el proceso.
-        cursor.execute("SELECT execute_complete_merge_process();") 
+        cursor.execute("SELECT process_dirty_entities()")
         conn.commit() # Commit después de la ejecución del procedimiento principal
         proc_run_time = time.time() - proc_start_time
         
