@@ -112,7 +112,7 @@ BEGIN
     );
 
     -- Crear índice único para relaciones si no existe
-    CREATE UNIQUE INDEX CONCURRENTLY idx_rel_unique ON relation (relation_type_id, from_entity_id, to_entity_id);
+    CREATE UNIQUE INDEX  idx_rel_unique ON relation (relation_type_id, from_entity_id, to_entity_id);
 
     -- Insertar nuevas relaciones
     RAISE NOTICE 'Insertando nuevas relaciones...';
